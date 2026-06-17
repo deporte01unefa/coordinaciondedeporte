@@ -852,7 +852,7 @@
 
     <button id="adminBtn" class="admin-btn">🔑 Acceso Administrador</button>
 
-    <!-- MODALES (igual que antes, se omiten por brevedad pero se incluyen igual) -->
+    <!-- MODALES -->
     <div id="modalEvento" class="modal-overlay"><div class="modal-contenido"><h3 id="modalEventoTitulo">📌 Agregar Evento Deportivo</h3><label>Título *</label><input type="text" id="eventoTitulo" placeholder="Ej: Torneo de Baloncesto"><label>Descripción</label><textarea id="eventoDescripcion" placeholder="Detalles del evento..."></textarea><label>Hora</label><input type="text" id="eventoHora" placeholder="Ej: 9:00 AM - 12:00 PM"><div class="botones-modal"><button id="btnGuardarEvento" class="btn-guardar">💾 Guardar</button><button id="btnCerrarModalEvento" class="btn-cerrar">❌ Cancelar</button></div></div></div>
     <div id="modalInfo" class="modal-overlay"><div class="modal-contenido" id="modalContenidoDinamico"></div></div>
     <div id="modalEstudiantes" class="modal-overlay"><div class="modal-contenido" id="modalEstudiantesContenido"></div></div>
@@ -863,7 +863,7 @@
     <div id="modalSercom" class="modal-overlay modal-sercom"><div class="modal-contenido"><h3 id="modalSercomTitle">📢 Agregar Comunicado</h3><label>Título *:</label><input type="text" id="sercomTitulo" placeholder="Título del comunicado"><label>Texto / Información:</label><textarea id="sercomTexto" placeholder="Escribe aquí el contenido..."></textarea><label>Imágenes (puedes seleccionar varias):</label><input type="file" id="sercomImagenes" accept="image/*" multiple><div id="sercomImagenesPreview" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;"></div><div class="botones-modal"><button class="btn-guardar" id="btnGuardarSerrcom">💾 Guardar</button><button class="btn-cerrar" id="btnCerrarModalSercom">❌ Cancelar</button></div></div></div>
 
     <script>
-        // -------------------- TODAS LAS FUNCIONES (igual que antes, pero con renderizado de calendario mejorado) --------------------
+        // -------------------- TODAS LAS FUNCIONES --------------------
         let isAdmin = false;
         const ADMIN_PASSWORD = "admin123";
         let profesionalesData = {};
@@ -876,32 +876,31 @@
         const qrImageElement = document.getElementById("qrImage");
         const qrUploadBtn = document.getElementById("qrUploadBtn");
 
-        // ---------- NUEVA CONSTANTE: Documentos predeterminados (siempre disponibles) ----------
+        // ---------- DOCUMENTOS PREDETERMINADOS (siempre disponibles) ----------
         const DOCUMENTOS_PREDETERMINADOS = [
             {
                 id: 1001,
-                nombre: "Reglamento Deportivo",
-                descripcion: "Reglamento interno del departamento de educación física",
+                nombre: "Constancia asistencia",
+                descripcion: "constancia de asistencia estudiantil",
                 fecha: "2026-06-16",
-                url: "documentos/reglamento_deportivo.pdf"   // Ruta relativa al archivo en el repositorio
+                url: "documents/Constancia asistencia Coord.Deporte.pdf"
             },
             {
                 id: 1002,
-                nombre: "Horarios de Entrenamiento",
-                descripcion: "Horarios de todas las disciplinas deportivas",
+                nombre: "FICHA DE REGISTRO",
+                descripcion: "registro de estudiante",
                 fecha: "2026-06-16",
-                url: "documentos/horarios_entrenamientos.docx"
+                url: "documents/FICHA DE REGISTRO.docx"
             },
             {
                 id: 1003,
-                nombre: "Planilla de Inscripción",
-                descripcion: "Formulario para inscripción en las actividades deportivas",
+                nombre: "Planilla de permiso",
+                descripcion: "Formulario de permiso para eventos deportivo",
                 fecha: "2026-06-16",
-                url: "documentos/planilla_inscripcion.xlsx"
+                url: "documents/Planilla de permiso Coord.Deporte.pdf"
             }
-            // Agrega aquí todos los documentos que necesites (con su nombre y url)
         ];
-        // -------------------------------------------------------------------------------------
+        // -------------------------------------------------------------------
 
         function cargarQR() { const img = localStorage.getItem(QR_STORAGE_KEY); if(img) qrImageElement.src = img; }
         function subirImagenQR() { if(!isAdmin) { alert("Solo administrador"); return; } const input = document.createElement("input"); input.type="file"; input.accept="image/*"; input.onchange=e=>{ const file=e.target.files[0]; if(file){ const reader=new FileReader(); reader.onload=ev=>{ localStorage.setItem(QR_STORAGE_KEY, ev.target.result); qrImageElement.src=ev.target.result; alert("QR actualizado"); }; reader.readAsDataURL(file); } }; input.click(); }
@@ -917,7 +916,7 @@
             for(let grupo of disciplinasRaw) for(let item of grupo.items) { disciplinasRelaciones.push({ nombre: item.nombre, entrenador: item.entrenador, icono: item.icono }); entrenadoresUnicos.add(item.entrenador); if(!estudiantesPorDisciplina[item.nombre]) estudiantesPorDisciplina[item.nombre] = []; }
             guardarEstudiantesLocal(); renderizarDisciplinas(); renderizarListaEntrenadores();
         }
-        function renderizarDisciplinas() { /* igual */ const container=document.getElementById("disciplinasDinamicas"); if(!container) return; const grupos={"Deportes de Conjunto":disciplinasRelaciones.slice(0,8),"Artes Marciales":disciplinasRelaciones.slice(8,14),"Deportes Mentales":disciplinasRelaciones.slice(14,15)}; let html=""; for(let [nombreGrupo, items] of Object.entries(grupos)){ html+=`<h3 class="section-title">🏆 ${nombreGrupo}</h3><div class="especialidades-grid">`; for(let item of items) html+=`<div class="especialidad-card" data-disciplina="${escapeHtml(item.nombre)}"><div class="especialidad-imagen"><span>${item.icono}</span></div><div class="especialidad-info"><h4>${escapeHtml(item.nombre)}</h4></div></div>`; html+=`</div>`; } container.innerHTML=html; document.querySelectorAll('.especialidad-card').forEach(card=>card.addEventListener('click',()=>{ const disciplina=card.getAttribute('data-disciplina'); abrirModalEstudiantes(disciplina); })); }
+        function renderizarDisciplinas() { const container=document.getElementById("disciplinasDinamicas"); if(!container) return; const grupos={"Deportes de Conjunto":disciplinasRelaciones.slice(0,8),"Artes Marciales":disciplinasRelaciones.slice(8,14),"Deportes Mentales":disciplinasRelaciones.slice(14,15)}; let html=""; for(let [nombreGrupo, items] of Object.entries(grupos)){ html+=`<h3 class="section-title">🏆 ${nombreGrupo}</h3><div class="especialidades-grid">`; for(let item of items) html+=`<div class="especialidad-card" data-disciplina="${escapeHtml(item.nombre)}"><div class="especialidad-imagen"><span>${item.icono}</span></div><div class="especialidad-info"><h4>${escapeHtml(item.nombre)}</h4></div></div>`; html+=`</div>`; } container.innerHTML=html; document.querySelectorAll('.especialidad-card').forEach(card=>card.addEventListener('click',()=>{ const disciplina=card.getAttribute('data-disciplina'); abrirModalEstudiantes(disciplina); })); }
         function renderizarListaEntrenadores() { const lista=document.getElementById("listaEntrenadoresDinamica"); if(!lista) return; lista.innerHTML=""; Array.from(entrenadoresUnicos).sort().forEach(ent=>{ const li=document.createElement("li"); li.textContent=ent; li.addEventListener("click",()=>mostrarDisciplinasDeEntrenador(ent)); lista.appendChild(li); }); }
         function mostrarDisciplinasDeEntrenador(entrenador){ const disciplinas=disciplinasRelaciones.filter(d=>d.entrenador===entrenador); let listaHtml=''; for(let d of disciplinas) listaHtml+=`<li style="background:#f0f0f0; margin:8px 0; padding:10px; border-radius:8px;">Disciplina encargada al ${escapeHtml(d.nombre)} ${d.icono}</li>`; const modal=document.getElementById("modalEstudiantes"); const contenido=document.getElementById("modalEstudiantesContenido"); contenido.innerHTML=`<h3>🏋️ Entrenador: ${escapeHtml(entrenador)}</h3><ul style="list-style: none; padding: 0;">${listaHtml}</ul><div class="botones-modal"><button class="btn-cerrar" id="btnCerrarModalEst">Cerrar</button></div>`; modal.style.display="flex"; document.getElementById("btnCerrarModalEst").addEventListener("click",()=>modal.style.display="none"); }
         function cargarEstudiantesLocal(){ const guardado=localStorage.getItem("estudiantesPorDisciplina"); if(guardado){ estudiantesPorDisciplina=JSON.parse(guardado); for(let disc in estudiantesPorDisciplina) estudiantesPorDisciplina[disc]=estudiantesPorDisciplina[disc].map(est=>({ id:est.id||Date.now(), nombre:est.nombre||'', cedula:est.cedula||'', telefono:est.telefono||'', correo:est.correo||'', peso:est.peso||'', estatura:est.estatura||'', edad:est.edad||'', fechaNac:est.fechaNac||'', carrera:est.carrera||'', semestre:est.semestre||'', numeroCamisa:est.numeroCamisa||'', seccion:est.seccion||'' })); guardarEstudiantesLocal(); } else { estudiantesPorDisciplina={}; disciplinasRelaciones.forEach(d=>{ if(!estudiantesPorDisciplina[d.nombre]) estudiantesPorDisciplina[d.nombre]=[]; }); guardarEstudiantesLocal(); } }
@@ -945,29 +944,36 @@
         function cerrarModalProf(){ modalProf.style.display="none"; }
         function asignarEventosClick(){ document.querySelectorAll('.lista-profesores li').forEach(el=>{ el.removeEventListener('click',()=>mostrarModalPerfil(el.innerText.trim())); el.addEventListener('click',()=>mostrarModalPerfil(el.innerText.trim())); }); document.querySelectorAll('.nombre-preparador, .personal-card .nombre').forEach(el=>{ el.removeEventListener('click',()=>mostrarModalPerfil(el.innerText.trim())); el.addEventListener('click',()=>mostrarModalPerfil(el.innerText.trim())); }); }
         let documentos=[]; 
-        // ---------- MODIFICACIÓN: cargar documentos con predeterminados si no hay guardados ----------
-        function cargarDocumentos(){
+
+        // ---------- Cargar documentos fusionando predeterminados + guardados ----------
+        function cargarDocumentos() {
             const guardado = localStorage.getItem("documentosEstudiantiles");
+            let docsGuardados = [];
             if (guardado) {
-                documentos = JSON.parse(guardado);
-            } else {
-                // Si no hay documentos guardados, usar los predeterminados
-                documentos = JSON.parse(JSON.stringify(DOCUMENTOS_PREDETERMINADOS));
-                guardarDocumentosLocal(); // se guardan en localStorage para futuras visitas
+                try { docsGuardados = JSON.parse(guardado); } catch(e) { docsGuardados = []; }
             }
+            let docsFinales = JSON.parse(JSON.stringify(DOCUMENTOS_PREDETERMINADOS));
+            if (Array.isArray(docsGuardados) && docsGuardados.length > 0) {
+                docsGuardados.forEach(doc => {
+                    if (!docsFinales.some(d => d.id === doc.id)) {
+                        docsFinales.push(doc);
+                    }
+                });
+            }
+            documentos = docsFinales;
+            guardarDocumentosLocal();
             renderizarDocumentos();
         }
-        // ------------------------------------------------------------------------------------------
+        // ----------------------------------------------------------------------------
+
         function guardarDocumentosLocal(){ localStorage.setItem("documentosEstudiantiles",JSON.stringify(documentos)); }
         function renderizarDocumentos(){ const contenedor=document.getElementById("listaDocumentos"); if(!contenedor) return; if(!documentos.length){ contenedor.innerHTML='<p style="color: gray;">No hay documentos.</p>'; return; } contenedor.innerHTML=""; documentos.forEach(doc=>{ const div=document.createElement("div"); div.className="documento-item"; div.innerHTML=`<div class="documento-info"><div class="documento-nombre">📄 ${escapeHtml(doc.nombre)}</div><div class="documento-fecha">${doc.fecha}</div>${doc.descripcion?`<div class="documento-desc">${escapeHtml(doc.descripcion)}</div>`:''}</div><div><button class="btn-descargar" data-id="${doc.id}">⬇️ Descargar</button>${isAdmin?`<button class="btn-eliminar-doc" data-id="${doc.id}">🗑️</button>`:''}</div>`; contenedor.appendChild(div); });
-            // ---------- MODIFICACIÓN: evento de descarga para soportar url o dataURL ----------
             document.querySelectorAll('.btn-descargar').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const id = parseInt(btn.dataset.id);
                     const doc = documentos.find(d => d.id === id);
                     if (doc) {
                         if (doc.url) {
-                            // Abrir en una nueva pestaña (o forzar descarga con download)
                             window.open(doc.url, '_blank');
                         } else if (doc.dataURL) {
                             let a = document.createElement('a');
@@ -978,7 +984,6 @@
                     }
                 });
             });
-            // --------------------------------------------------------------------------------
             if(isAdmin) document.querySelectorAll('.btn-eliminar-doc').forEach(btn=>btn.addEventListener('click',()=>{ if(confirm("Eliminar?")){ documentos=documentos.filter(d=>d.id!==parseInt(btn.dataset.id)); guardarDocumentosLocal(); renderizarDocumentos(); } })); }
         const modalDoc=document.getElementById("modalDocumento"); document.getElementById("btnAbrirModalDocumento")?.addEventListener("click",()=>{ modalDoc.style.display="flex"; }); document.getElementById("btnCerrarModalDoc")?.addEventListener("click",()=>modalDoc.style.display="none"); document.getElementById("btnGuardarDocumento")?.addEventListener("click",()=>{ if(!isAdmin) return alert("Sin permisos"); const nombre=document.getElementById("docNombre").value.trim(); const desc=document.getElementById("docDescripcion").value.trim(); const archivo=document.getElementById("docArchivo").files[0]; if(!nombre||!archivo) return alert("Nombre y archivo requeridos"); if(archivo.size>5*1024*1024) return alert("Máx 5MB"); const reader=new FileReader(); reader.onload=e=>{ documentos.push({ id:Date.now(), nombre, descripcion:desc, fecha:new Date().toLocaleString(), dataURL:e.target.result, tamaño:archivo.size }); guardarDocumentosLocal(); renderizarDocumentos(); modalDoc.style.display="none"; alert("Documento subido"); }; reader.readAsDataURL(archivo); });
         function cargarSercom(){ const guardado=localStorage.getItem("sercomItems"); sercomItems=guardado?JSON.parse(guardado):[]; renderizarSercom(); }
