@@ -876,6 +876,33 @@
         const qrImageElement = document.getElementById("qrImage");
         const qrUploadBtn = document.getElementById("qrUploadBtn");
 
+        // ---------- NUEVA CONSTANTE: Documentos predeterminados (siempre disponibles) ----------
+        const DOCUMENTOS_PREDETERMINADOS = [
+            {
+                id: 1001,
+                nombre: "Reglamento Deportivo",
+                descripcion: "Reglamento interno del departamento de educación física",
+                fecha: "2026-06-16",
+                url: "documentos/reglamento_deportivo.pdf"   // Ruta relativa al archivo en el repositorio
+            },
+            {
+                id: 1002,
+                nombre: "Horarios de Entrenamiento",
+                descripcion: "Horarios de todas las disciplinas deportivas",
+                fecha: "2026-06-16",
+                url: "documentos/horarios_entrenamientos.docx"
+            },
+            {
+                id: 1003,
+                nombre: "Planilla de Inscripción",
+                descripcion: "Formulario para inscripción en las actividades deportivas",
+                fecha: "2026-06-16",
+                url: "documentos/planilla_inscripcion.xlsx"
+            }
+            // Agrega aquí todos los documentos que necesites (con su nombre y url)
+        ];
+        // -------------------------------------------------------------------------------------
+
         function cargarQR() { const img = localStorage.getItem(QR_STORAGE_KEY); if(img) qrImageElement.src = img; }
         function subirImagenQR() { if(!isAdmin) { alert("Solo administrador"); return; } const input = document.createElement("input"); input.type="file"; input.accept="image/*"; input.onchange=e=>{ const file=e.target.files[0]; if(file){ const reader=new FileReader(); reader.onload=ev=>{ localStorage.setItem(QR_STORAGE_KEY, ev.target.result); qrImageElement.src=ev.target.result; alert("QR actualizado"); }; reader.readAsDataURL(file); } }; input.click(); }
         function actualizarVisibilidadBotonesQR() { if(qrUploadBtn) qrUploadBtn.style.display = isAdmin ? "block" : "none"; }
@@ -917,9 +944,42 @@
         function mostrarModalPerfil(nombre){ currentPersonaNombre=nombre; const data=obtenerDatosPersona(nombre); const profesoresList=["Felix Abreu","Nakari Antune","Jesus Abello","Tony Herrera","Oliver Amundarain","Armando Peña","Giovanni Brito","Sarwinhs Colina"]; const esProfesorEF=profesoresList.includes(nombre); if(isAdmin){ let html=`<h3>✏️ Editar Perfil</h3><label>Nombre:</label><input type="text" id="editNombre" value="${escapeHtml(data.nombre)}"><label>Cargo:</label><input type="text" id="editCargo" value="${escapeHtml(data.cargo)}"><label>Especialidad:</label><input type="text" id="editEspecialidad" value="${escapeHtml(data.especialidad)}"><label>Experiencia:</label><input type="text" id="editExperiencia" value="${escapeHtml(data.experiencia)}"><label>Email:</label><input type="email" id="editEmail" value="${escapeHtml(data.email)}"><label>📞 Teléfono:</label><input type="text" id="editTelefono" value="${escapeHtml(data.telefono)}"><label>Horario:</label><textarea id="editHorario">${escapeHtml(data.horario)}</textarea>`; if(esProfesorEF) html+=`<button class="btn-lista-estudiantes" id="btnListaEstudiantesProf">📋 Lista de estudiantes</button>`; html+=`<div class="botones-modal"><button class="btn-guardar" id="btnGuardarModal">Guardar</button><button class="btn-cerrar" id="btnCerrarModal">Cerrar</button></div>`; modalContenido.innerHTML=html; document.getElementById("btnGuardarModal").onclick=()=>{ actualizarPersona(currentPersonaNombre,{ nombre:document.getElementById("editNombre").value, cargo:document.getElementById("editCargo").value, especialidad:document.getElementById("editEspecialidad").value, experiencia:document.getElementById("editExperiencia").value, email:document.getElementById("editEmail").value, telefono:document.getElementById("editTelefono").value, horario:document.getElementById("editHorario").value }); cerrarModalProf(); alert("Perfil actualizado"); }; document.getElementById("btnCerrarModal").onclick=cerrarModalProf; if(esProfesorEF) document.getElementById("btnListaEstudiantesProf").addEventListener("click",()=>{ cerrarModalProf(); abrirModalEstudiantesProfesor(nombre); }); } else { let html=`<h3>👤 Perfil</h3><label>Nombre:</label><p>${escapeHtml(data.nombre)}</p><label>Cargo:</label><p>${escapeHtml(data.cargo)}</p><label>Especialidad:</label><p>${escapeHtml(data.especialidad)}</p><label>Experiencia:</label><p>${escapeHtml(data.experiencia)}</p><label>Email:</label><p>${escapeHtml(data.email)}</p><label>📞 Teléfono:</label><p>${escapeHtml(data.telefono)||"No registrado"}</p><label>Horario:</label><p>${escapeHtml(data.horario)||"No registrado"}</p>`; if(esProfesorEF) html+=`<button class="btn-lista-estudiantes" id="btnListaEstudiantesProf">📋 Lista de estudiantes</button>`; html+=`<div class="botones-modal"><button class="btn-cerrar" id="btnCerrarModal">Cerrar</button></div>`; modalContenido.innerHTML=html; document.getElementById("btnCerrarModal").onclick=cerrarModalProf; if(esProfesorEF) document.getElementById("btnListaEstudiantesProf").addEventListener("click",()=>{ cerrarModalProf(); abrirModalEstudiantesProfesor(nombre); }); } modalProf.style.display="flex"; }
         function cerrarModalProf(){ modalProf.style.display="none"; }
         function asignarEventosClick(){ document.querySelectorAll('.lista-profesores li').forEach(el=>{ el.removeEventListener('click',()=>mostrarModalPerfil(el.innerText.trim())); el.addEventListener('click',()=>mostrarModalPerfil(el.innerText.trim())); }); document.querySelectorAll('.nombre-preparador, .personal-card .nombre').forEach(el=>{ el.removeEventListener('click',()=>mostrarModalPerfil(el.innerText.trim())); el.addEventListener('click',()=>mostrarModalPerfil(el.innerText.trim())); }); }
-        let documentos=[]; function cargarDocumentos(){ const guardado=localStorage.getItem("documentosEstudiantiles"); documentos=guardado?JSON.parse(guardado):[]; renderizarDocumentos(); }
+        let documentos=[]; 
+        // ---------- MODIFICACIÓN: cargar documentos con predeterminados si no hay guardados ----------
+        function cargarDocumentos(){
+            const guardado = localStorage.getItem("documentosEstudiantiles");
+            if (guardado) {
+                documentos = JSON.parse(guardado);
+            } else {
+                // Si no hay documentos guardados, usar los predeterminados
+                documentos = JSON.parse(JSON.stringify(DOCUMENTOS_PREDETERMINADOS));
+                guardarDocumentosLocal(); // se guardan en localStorage para futuras visitas
+            }
+            renderizarDocumentos();
+        }
+        // ------------------------------------------------------------------------------------------
         function guardarDocumentosLocal(){ localStorage.setItem("documentosEstudiantiles",JSON.stringify(documentos)); }
-        function renderizarDocumentos(){ const contenedor=document.getElementById("listaDocumentos"); if(!contenedor) return; if(!documentos.length){ contenedor.innerHTML='<p style="color: gray;">No hay documentos.</p>'; return; } contenedor.innerHTML=""; documentos.forEach(doc=>{ const div=document.createElement("div"); div.className="documento-item"; div.innerHTML=`<div class="documento-info"><div class="documento-nombre">📄 ${escapeHtml(doc.nombre)}</div><div class="documento-fecha">${doc.fecha}</div>${doc.descripcion?`<div class="documento-desc">${escapeHtml(doc.descripcion)}</div>`:''}</div><div><button class="btn-descargar" data-id="${doc.id}">⬇️ Descargar</button>${isAdmin?`<button class="btn-eliminar-doc" data-id="${doc.id}">🗑️</button>`:''}</div>`; contenedor.appendChild(div); }); document.querySelectorAll('.btn-descargar').forEach(btn=>btn.addEventListener('click',()=>{ const id=parseInt(btn.dataset.id); const doc=documentos.find(d=>d.id===id); if(doc?.dataURL){ let a=document.createElement('a'); a.href=doc.dataURL; a.download=doc.nombre; a.click(); } })); if(isAdmin) document.querySelectorAll('.btn-eliminar-doc').forEach(btn=>btn.addEventListener('click',()=>{ if(confirm("Eliminar?")){ documentos=documentos.filter(d=>d.id!==parseInt(btn.dataset.id)); guardarDocumentosLocal(); renderizarDocumentos(); } })); }
+        function renderizarDocumentos(){ const contenedor=document.getElementById("listaDocumentos"); if(!contenedor) return; if(!documentos.length){ contenedor.innerHTML='<p style="color: gray;">No hay documentos.</p>'; return; } contenedor.innerHTML=""; documentos.forEach(doc=>{ const div=document.createElement("div"); div.className="documento-item"; div.innerHTML=`<div class="documento-info"><div class="documento-nombre">📄 ${escapeHtml(doc.nombre)}</div><div class="documento-fecha">${doc.fecha}</div>${doc.descripcion?`<div class="documento-desc">${escapeHtml(doc.descripcion)}</div>`:''}</div><div><button class="btn-descargar" data-id="${doc.id}">⬇️ Descargar</button>${isAdmin?`<button class="btn-eliminar-doc" data-id="${doc.id}">🗑️</button>`:''}</div>`; contenedor.appendChild(div); });
+            // ---------- MODIFICACIÓN: evento de descarga para soportar url o dataURL ----------
+            document.querySelectorAll('.btn-descargar').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = parseInt(btn.dataset.id);
+                    const doc = documentos.find(d => d.id === id);
+                    if (doc) {
+                        if (doc.url) {
+                            // Abrir en una nueva pestaña (o forzar descarga con download)
+                            window.open(doc.url, '_blank');
+                        } else if (doc.dataURL) {
+                            let a = document.createElement('a');
+                            a.href = doc.dataURL;
+                            a.download = doc.nombre;
+                            a.click();
+                        }
+                    }
+                });
+            });
+            // --------------------------------------------------------------------------------
+            if(isAdmin) document.querySelectorAll('.btn-eliminar-doc').forEach(btn=>btn.addEventListener('click',()=>{ if(confirm("Eliminar?")){ documentos=documentos.filter(d=>d.id!==parseInt(btn.dataset.id)); guardarDocumentosLocal(); renderizarDocumentos(); } })); }
         const modalDoc=document.getElementById("modalDocumento"); document.getElementById("btnAbrirModalDocumento")?.addEventListener("click",()=>{ modalDoc.style.display="flex"; }); document.getElementById("btnCerrarModalDoc")?.addEventListener("click",()=>modalDoc.style.display="none"); document.getElementById("btnGuardarDocumento")?.addEventListener("click",()=>{ if(!isAdmin) return alert("Sin permisos"); const nombre=document.getElementById("docNombre").value.trim(); const desc=document.getElementById("docDescripcion").value.trim(); const archivo=document.getElementById("docArchivo").files[0]; if(!nombre||!archivo) return alert("Nombre y archivo requeridos"); if(archivo.size>5*1024*1024) return alert("Máx 5MB"); const reader=new FileReader(); reader.onload=e=>{ documentos.push({ id:Date.now(), nombre, descripcion:desc, fecha:new Date().toLocaleString(), dataURL:e.target.result, tamaño:archivo.size }); guardarDocumentosLocal(); renderizarDocumentos(); modalDoc.style.display="none"; alert("Documento subido"); }; reader.readAsDataURL(archivo); });
         function cargarSercom(){ const guardado=localStorage.getItem("sercomItems"); sercomItems=guardado?JSON.parse(guardado):[]; renderizarSercom(); }
         function guardarSercomLocal(){ localStorage.setItem("sercomItems",JSON.stringify(sercomItems)); }
